@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Canvas</title>
+    <style>
+      canvas {
+        border: 1px solid #000;
+        background-color: #ddd;
+
+      }
+      body {
+        margin: 0;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+
+    {{!-- <button></button> --}}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+    <script type="text/javascript" src="js/canvas.js"></script>
+    <script type="text/javascript">
+      const socket = io.connect('/');
+
+      let socketID = undefined;
+      let coords = {x: 0, y: 0};
+
+      let users = [];
+
+      socket.on('send_id_to_client', val => {
+        console.log(`Your socket id is ${val}`);
+        socketID = val;
+      });
+
+      function updateCoords(x, y) {
+        socket.emit('client_update_coords', {x, y});
+      };
+
+      socket.on('send_coords_to_client', val => {
+        console.log('==============================')
+        users = [];
+        for (let i=0;i<val.length;i++) {
+          users.push(val[i])
+          if (val[i].id == socketID){
+            console.log(`current_user: x:${val[i].coords.x}, y:${val[i].coords.y}`);
+          } else {
+            console.log(`${val[i].id}: x:${val[i].coords.x}, y:${val[i].coords.y}`);
+          }
+        }
+        
+      })
+
+
+
+
+    </script>
+  </body>
+</html>
