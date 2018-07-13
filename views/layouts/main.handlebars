@@ -18,8 +18,11 @@
   </head>
   <body>
 
-    {{!-- <button></button> --}}
+    <p id="results">Results:</p>
+    <canvas id="canvas" width=300 height=300></canvas>
 
+    {{!-- <button></button> --}}
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
     <script type="text/javascript" src="js/canvas.js"></script>
     <script type="text/javascript">
@@ -29,6 +32,27 @@
       let coords = {x: 0, y: 0};
 
       let users = [];
+
+
+      const findIndex = id => {
+        let returnVal = {index: null};
+
+        users.forEach((item, index) => {
+          if (item.id == id) {
+            returnVal = {index, x: item.coords.x, y: item.coords.y};
+            return returnVal;
+          }
+        });
+        return returnVal;
+      }; 
+
+      function sendCoordsToServer() {
+        {{!-- console.log(`Sending to server ${callum.x},${callum.y}`) --}}
+        socket.emit('send_coords_to_server', {x: callum.x, y: callum.y});
+        // console.log('sending coords')
+      };
+
+      const repeater = setInterval(() => sendCoordsToServer(), 100);
 
       socket.on('send_id_to_client', val => {
         console.log(`Your socket id is ${val}`);
@@ -43,14 +67,28 @@
         console.log('==============================')
         users = [];
         for (let i=0;i<val.length;i++) {
-          users.push(val[i])
+          //users.push(val[i])
           if (val[i].id == socketID){
-            console.log(`current_user: x:${val[i].coords.x}, y:${val[i].coords.y}`);
+            console.log(`current_user: ${val[i].coords.x},${val[i].coords.y}`);
           } else {
-            console.log(`${val[i].id}: x:${val[i].coords.x}, y:${val[i].coords.y}`);
+            console.log(`${val[i].id}: ${val[i].coords.x},${val[i].coords.y}`);
+            users.push(val[i]);
           }
         }
         
+        // Update player coords
+        Object.keys(players).forEach((item, index) => {
+          console.log(players[item])
+          console.log(users);
+
+          let userIndex = findIndex(item);
+          //console.log('reeeeee', users[userIndex.index].coords)
+
+          players[item].x = users[userIndex.index].coords.x;
+          players[item].y = users[userIndex.index].coords.y;
+          //players[item].draw();
+        });
+
       })
 
 

@@ -28,6 +28,7 @@ const findIndex = (socketVal) => {
   clients.forEach((item, index) => {
     if (item.id == socketVal) {
       returnVal = {index, socket: item.socket, coords: {x: item.coords.x, y: item.coords.y}};
+      return returnVal;
     }
   });
   return returnVal;
@@ -48,34 +49,41 @@ io.on('connection', socket => {
   console.log(socket.id);
 
   clients.push({id: socket.id, coords: {x:0, y:0}});
-  console.log('clients', clients);
+  // console.log('clients', clients);
   socket.emit('send_id_to_client', socket.id);
 
-  function sendCoords() {
+  function sendCoordsToClients() {
+    console.log(clients);
+    console.log('============================')
     socket.emit('send_coords_to_client', clients);
     // console.log('sending coords')
   };
 
-  const repeater = setInterval(() => sendCoords(), 2000);
+  const repeater = setInterval(() => sendCoordsToClients(), 1);
 
-  socket.on('client_update_coords', coords => {
-    console.log('updating coords', coords)
-    // console.log(coords.x)
-    // console.log(socket.id)
+
+
+
+  socket.on('send_coords_to_server', coords => {
+    
     index = findIndex(socket.id);
-    // console.log(index)
-    console.log(clients[index.index].coords)
-    clients[index.index].coords.x = coords.x;
-    clients[index.index].coords.y = coords.y;
+    if (index.index !== null) {
+      clients[index.index].coords.x = coords.x;
+      clients[index.index].coords.y = coords.y;
+    } else {
+      console.log('error, index is null')
+    }
+    // console.log(clients)
+    // console.log('=============')
   });
 
 
-  socket.on('disconnect', socket => {
+  socket.on('disconnect', () => {
     index = findIndex(socket.id);
-    clients.splice(index, 1);
+    clients.splice(index.index, 1);
 
-    console.log('client disconnected');
-    console.log('clients', clients);
+    console.log('client disconnected', socket.id);
+    // console.log('clients', clients);
   });
 });
 
