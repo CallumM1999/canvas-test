@@ -57,16 +57,6 @@ io.on('connection', socket => {
 
   console.log(clients)
 
-  function sendCoordsToClients() {
-    // console.log(clients);
-    // console.log('============================')
-    socket.emit('send_coords_to_client', clients);
-    // console.log('sending coords')
-  };
-
-  const repeater = setInterval(function() {
-    sendCoordsToClients()
-  }, 15);
 
 
 
@@ -77,10 +67,20 @@ io.on('connection', socket => {
   });
 
   socket.on('disconnect', () => {
-    delete clients[socket.id];
+    delete clients[socket.id]; 
     console.log('client disconnected', socket.id);
     io.emit('client_disconnect', socket.id);
   });
 });
 
 
+function sendCoordsToClients() {
+  // console.log(clients);
+  // console.log('============================')
+  io.volatile.emit('send_coords_to_client', clients);
+  // console.log('sending coords')
+};
+
+const repeater = setInterval(function() {
+  sendCoordsToClients()
+}, 15);
