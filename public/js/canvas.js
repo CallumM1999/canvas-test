@@ -11,17 +11,17 @@ var $results = $("#results");
 var fps, fpsInterval, startTime, now, then, elapsed;
 var $canvas = $('canvas');
 
-players = {};
+//players = {};
 
 ctx = this.canvas.getContext('2d');
 $document = $(document);
 
 class Player {
-    constructor() {
+    constructor(x=100, y=100) {
         this.width = 30;
         this.height = 30;
-        this.x = 100;
-        this.y = 100;
+        this.x = x;
+        this.y = y;
         this.color = '#' + Math.floor(Math.random() * 16777215).toString(16);
     }
     draw() {
@@ -31,11 +31,11 @@ class Player {
 }
 
 class User extends Player {
-    constructor() {
+    constructor(color='red') {
         super();
         this.x_speed = 0;
         this.y_speed = 0;
-        this.color = 'red';
+        this.color = color;
         this.keyup = $document.keydown(e => {
             if (e.key === 'ArrowUp') this.y_speed = -1;
             if (e.key === 'ArrowDown') this.y_speed = 1;
@@ -53,14 +53,15 @@ class User extends Player {
     }
 }
 
-var callum = new User();
-startAnimating(144);
+var callum = new User('#868686');
+startAnimating(60);
 
-function startAnimating(fps) {
+
+function startAnimating(fps=20) {
     fpsInterval = 1000 / fps;
     then = Date.now();
     startTime = then;
-    console.log(startTime);
+    // console.log(startTime);
     animate();
 }
 
@@ -84,21 +85,35 @@ function animate() {
         then = now - (elapsed % fpsInterval);
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        users.forEach((item, index) => {
-            if (!players.hasOwnProperty(item.id)) {
-                console.log('Not in players', item.id);
-                players[item.id] = {
-                    x: item.coords.x,
-                    y: item.coords.y
-                };
-                console.log('players', players);
-                players[item.id] = new Player();
-            }
-        });
+        console.log(players)
 
-        Object.keys(players).forEach((item, index) => {
-            players[item].draw();
-        });
+        for (let key in players) {
+            //console.log('rendering: ',key);
+            if (key !== socketID) {
+                console.log(players[key], 'player')
+                players[key].draw();    
+    
+            } else {
+                //console.log(key, 'matches')
+            }
+
+        }
+        console.log('===========================')
+        // users.forEach((item, index) => {
+        //     if (!players.hasOwnProperty(item.id)) {
+        //         console.log('Not in players', item.id);
+        //         players[item.id] = {
+        //             x: item.coords.x,
+        //             y: item.coords.y
+        //         };
+        //         console.log('players', players);
+        //         players[item.id] = new Player();
+        //     }
+        // });
+
+        // Object.keys(players).forEach((item, index) => {
+        //     players[item].draw();
+        // });
 
         callum.update();
         callum.draw();

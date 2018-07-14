@@ -22,68 +22,64 @@ app.get('/', function (req, res) {
   res.render('home', {port});
 });
 
-const findIndex = (socketVal) => {
-  let returnVal = {index: null};
+// const findIndex = (socketVal) => {
+//   let returnVal = {index: null};
 
-  clients.forEach((item, index) => {
-    if (item.id == socketVal) {
-      returnVal = {index, socket: item.socket, coords: {x: item.coords.x, y: item.coords.y}};
-      return returnVal;
-    }
-  });
-  return returnVal;
-}; 
+//   clients.forEach((item, index) => {
+//     if (item.id == socketVal) {
+//       returnVal = {index, socket: item.socket, coords: {x: item.coords.x, y: item.coords.y}};
+//       return returnVal;
+//     }
+//   });
+//   return returnVal;
+// }; 
 
 
 
-let clients = [
-  // {id: undefined,
-  // coords: {
-  //   x: 0,
-  //   y: 0
-  // }}
-];
+// let clients = [
+//   // {id: undefined,
+//   // coords: {
+//   //   x: 0,
+//   //   y: 0
+//   // }}
+// ];
+
+let clients = {};
 
 io.on('connection', socket => {
   console.log('user connected');
   console.log(socket.id);
 
-  clients.push({id: socket.id, coords: {x:0, y:0}});
-  // console.log('clients', clients);
+  // add client to clients object
+  clients[socket.id] = {x:0, y:0};
+
   socket.emit('send_id_to_client', socket.id);
 
+  console.log(clients)
+
   function sendCoordsToClients() {
-    console.log(clients);
-    console.log('============================')
+    // console.log(clients);
+    // console.log('============================')
     socket.emit('send_coords_to_client', clients);
     // console.log('sending coords')
   };
 
-  const repeater = setInterval(() => sendCoordsToClients(), 1);
+  const repeater = setInterval(function() {
+    sendCoordsToClients()
+  }, 15);
 
 
 
 
-  socket.on('send_coords_to_server', coords => {
-    
-    index = findIndex(socket.id);
-    if (index.index !== null) {
-      clients[index.index].coords.x = coords.x;
-      clients[index.index].coords.y = coords.y;
-    } else {
-      console.log('error, index is null')
-    }
+  socket.on('client_update_coords', coords => {
+    clients[socket.id] = {x: coords.x, y: coords.y};
     // console.log(clients)
-    // console.log('=============')
   });
 
-
   socket.on('disconnect', () => {
-    index = findIndex(socket.id);
-    clients.splice(index.index, 1);
-
+    delete clients[socket.id];
     console.log('client disconnected', socket.id);
-    // console.log('clients', clients);
+    io.emit('client_disconnect', socket.id);
   });
 });
 

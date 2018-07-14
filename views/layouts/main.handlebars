@@ -29,67 +29,101 @@
       const socket = io.connect('/');
 
       let socketID = undefined;
-      let coords = {x: 0, y: 0};
+      let players = {};
 
-      let users = [];
+      //let coords = {x:0, y:0};
 
 
-      const findIndex = id => {
-        let returnVal = {index: null};
-
-        users.forEach((item, index) => {
-          if (item.id == id) {
-            returnVal = {index, x: item.coords.x, y: item.coords.y};
-            return returnVal;
-          }
-        });
-        return returnVal;
-      }; 
-
-      function sendCoordsToServer() {
-        {{!-- console.log(`Sending to server ${callum.x},${callum.y}`) --}}
-        socket.emit('send_coords_to_server', {x: callum.x, y: callum.y});
-        // console.log('sending coords')
-      };
-
-      const repeater = setInterval(() => sendCoordsToServer(), 100);
 
       socket.on('send_id_to_client', val => {
         console.log(`Your socket id is ${val}`);
         socketID = val;
       });
 
-      function updateCoords(x, y) {
-        socket.emit('client_update_coords', {x, y});
-      };
+      startCheck = setInterval(function() {
+        if (socketID !== undefined) {
+          clearInterval(startCheck);
+          startSendCoordsTimer();
+        }
+      }, 10);
+
+      function startSendCoordsTimer() {sendTimer = setInterval(sendCoordsToServer, 15)};
+      function sendCoordsToServer() {socket.emit('client_update_coords', {x:callum.x, y:callum.y})};
+
 
       socket.on('send_coords_to_client', val => {
-        console.log('==============================')
-        users = [];
-        for (let i=0;i<val.length;i++) {
-          //users.push(val[i])
-          if (val[i].id == socketID){
-            console.log(`current_user: ${val[i].coords.x},${val[i].coords.y}`);
-          } else {
-            console.log(`${val[i].id}: ${val[i].coords.x},${val[i].coords.y}`);
-            users.push(val[i]);
+          //console.log('updating coords')
+          //console.log(players)
+          for (let key in val) {
+            if (key !== socketID) {
+
+            //console.log(players[key])
+            //console.log(players[key].)
+            if (key in players == false) {
+              //console.log('neww player')
+              players[key] = val[key];
+              // give canvas methods and properties
+              players[key] = new Player();
+              //console.log(players[key])
+            } 
+            players[key].x = val[key].x;
+            players[key].y = val[key].y;
+
+            }
+
+            
           }
-        }
-        
-        // Update player coords
-        Object.keys(players).forEach((item, index) => {
-          console.log(players[item])
-          console.log(users);
-
-          let userIndex = findIndex(item);
-          //console.log('reeeeee', users[userIndex.index].coords)
-
-          players[item].x = users[userIndex.index].coords.x;
-          players[item].y = users[userIndex.index].coords.y;
-          //players[item].draw();
+          //console.log(players)
         });
 
-      })
+      socket.on('client_disconnect', id => {
+        //console.log('client disconnected, deleting player')
+        delete players[id];
+      });
+
+
+
+
+
+      // ====================================
+
+      
+
+
+
+//      const findIndex = id => {
+//        let returnVal = {index: null};
+//
+//        users.forEach((item, index) => {
+//          if (item.id == id) {
+//            returnVal = {index, x: item.coords.x, y: item.coords.y};
+//            return returnVal;
+//          }
+//        });
+//        return returnVal;
+//      }; 
+
+ 
+
+
+ 
+
+
+        
+        // Update player coords
+ //       Object.keys(players).forEach((item, index) => {
+      //    console.log(players[item])
+       //   console.log(users);
+
+       //   let userIndex = findIndex(item);
+          //console.log('reeeeee', users[userIndex.index].coords)
+
+        //  players[item].x = users[userIndex.index].coords.x;
+        //  players[item].y = users[userIndex.index].coords.y;
+          //players[item].draw();
+     //   });
+
+    //  })
 
 
 
