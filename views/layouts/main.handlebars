@@ -42,9 +42,12 @@
         //console.log(data)
         for (let key in data) {
       			if (key in players === false) {
-      				players[key] = data[key];
-              players[key] = new Player();
-      				//players[key] = new Player(data[key].x, val[key].x);
+                players[key] = data[key];
+                if (key === socket.id) {
+                  players[key] = new User();
+                } else {
+                  players[key] = new Player();
+                }
       			} else {
               players[key].x = data[key].x;
               players[key].y = data[key].y;

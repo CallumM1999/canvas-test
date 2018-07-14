@@ -11,7 +11,8 @@ var $results = $("#results");
 var fps, fpsInterval, startTime, now, then, elapsed;
 var $canvas = $('canvas');
 
-
+var bgImage = new Image();
+ bgImage.src = "https://raw.github.com/lostdecade/simple_canvas_game/master/images/background.png";
 const ctx = this.canvas.getContext('2d');
 const $document = $(document);
 
@@ -24,41 +25,35 @@ const colors = [
 ];
 
 class Player {
-	constructor(x = 0, y = 0, color='black') {
+	constructor(color='black') {
 		this.width = 30;
 		this.height = 30;
-		this.x = x;
-		this.y = y;
+		// this.x = x;
+		// this.y = y;
 		this.color = color;
 	}
 	draw() {
 		ctx.fillStyle = this.color;
-		ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.fillRect(this.x - players[socket.id].x + 150,
+             this.y - players[socket.id].y + 150,
+              this.width, this.height);
 	}
 }
 
-// class User extends Player {
-// 	constructor(color = 'red') {
-// 		super();
-// 		this.x_speed = 0;
-// 		this.y_speed = 0;
-// 		this.color = color;
-// 		this.keyup = $document.keydown(e => {
-// 			if (e.key === 'ArrowUp') this.y_speed = -1;
-// 			if (e.key === 'ArrowDown') this.y_speed = 1;
-// 			if (e.key === 'ArrowLeft') this.x_speed = -1;
-// 			if (e.key === 'ArrowRight') this.x_speed = 1;
-// 		});
-// 		this.keydown = $document.keyup(e => {
-// 			if (e.key === 'ArrowUp' || e.key === 'ArrowDown') callum.y_speed = 0;
-// 			if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') callum.x_speed = 0;
-// 		});
-// 	}
-// 	update() {
-// 		this.x += this.x_speed;
-// 		this.y += this.y_speed;
-// 	}
-// }
+class User {
+	constructor() {
+        this.width = 30;
+        this.height = 30;
+        this.color = 'red';
+		
+	}
+	draw() {
+        ctx.drawImage(bgImage, -this.x, -this.y);
+
+		ctx.fillStyle = this.color;
+		ctx.fillRect(150, 150, this.width, this.height);
+	}
+}
 
 // var callum = new User('#868686');
 startAnimating(60);
@@ -92,15 +87,17 @@ function animate() {
 		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
 		//console.log(players);
+		players[socket.id].draw();
 
 		for (let key in players) {
-			// if (key !== socketID) {
+			if (key !== socket.id) {
                 players[key].draw();
-            // }
+            }
 		}
 
-		// callum.update();
-		// callum.draw();
+        // callum.update();
+        // console.log(socket.id)
+        // console.log(players)
 
 		// TESTING...Report #seconds since start and achieved fps.
 		var sinceStart = now - startTime;

@@ -71,8 +71,20 @@ io.on('connection', socket => {
 
 function updateUserCoords() {
   for (let key in clients) {
-    clients[key].x += clients[key].x_speed;
-    clients[key].y += clients[key].y_speed;
+    console.log(clients[key].y)
+    if (clients[key].x > -150 && clients[key].x_speed === -1) {
+      clients[key].x += clients[key].x_speed;
+    }
+    if (clients[key].x <= 330 && clients[key].x_speed === 1) {
+      clients[key].x += clients[key].x_speed;
+    }
+
+    if (clients[key].y > -150 && clients[key].y_speed === -1) {
+      clients[key].y += clients[key].y_speed;
+    }
+    if (clients[key].y <= 300 && clients[key].y_speed === 1) {
+      clients[key].y += clients[key].y_speed;
+    }
   }
 }
 
