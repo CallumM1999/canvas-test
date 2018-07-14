@@ -21,113 +21,120 @@
     <p id="results">Results:</p>
     <canvas id="canvas" width=300 height=300></canvas>
 
-    {{!-- <button></button> --}}
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
     <script type="text/javascript" src="js/canvas.js"></script>
-    <script type="text/javascript">
+    <script>
       const socket = io.connect('/');
-
-      let socketID = undefined;
       let players = {};
 
-      //let coords = {x:0, y:0};
+      let y_speed = 0;
+      let x_speed = 0;
 
-
-
-      socket.on('send_id_to_client', val => {
-        console.log(`Your socket id is ${val}`);
-        socketID = val;
-      });
-
-      startCheck = setInterval(function() {
-        if (socketID !== undefined) {
-          clearInterval(startCheck);
-          startSendCoordsTimer();
-        }
-      }, 10);
-
-      function startSendCoordsTimer() {sendTimer = setInterval(sendCoordsToServer, 15)};
-      function sendCoordsToServer() {socket.emit('client_update_coords', {x:callum.x, y:callum.y})};
-
-
-      socket.on('send_coords_to_client', val => {
-          //console.log('updating coords')
-          //console.log(players)
-          for (let key in val) {
-            if (key !== socketID) {
-
-            //console.log(players[key])
-            //console.log(players[key].)
-            if (key in players == false) {
-              //console.log('neww player')
-              players[key] = val[key];
-              // give canvas methods and properties
-              players[key] = new Player();
-              //console.log(players[key])
-            } 
-            players[key].x = val[key].x;
-            players[key].y = val[key].y;
-
-            }
-
-            
-          }
-          //console.log(players)
+      socket.on('connect', () => {
+        socket.emit('new_client_connect', {
+          username: 'user1'
         });
-
-      socket.on('client_disconnect', id => {
-        //console.log('client disconnected, deleting player')
-        delete players[id];
       });
 
 
+      socket.on('send_coords_to_clients', data => {
+        //console.log(data)
+        for (let key in data) {
+      			if (key in players === false) {
+      				players[key] = data[key];
+              players[key] = new Player();
+      				//players[key] = new Player(data[key].x, val[key].x);
+      			} else {
+              players[key].x = data[key].x;
+              players[key].y = data[key].y;
+            }
+        }
+      //console.log(players)
+      });
 
 
-
-      // ====================================
-
-      
-
+    socket.on('client_disconnect', id => {
+      delete players[id];
+    });    
 
 
-//      const findIndex = id => {
-//        let returnVal = {index: null};
-//
-//        users.forEach((item, index) => {
-//          if (item.id == id) {
-//            returnVal = {index, x: item.coords.x, y: item.coords.y};
-//            return returnVal;
-//          }
-//        });
-//        return returnVal;
-//      }; 
+    function updatePlayerDirection() {
+      socket.emit('update_player_direction', {x_speed, y_speed})
+    }
 
- 
+    $(document).keydown(e => {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        if (e.key === 'ArrowUp') y_speed = -1;
+        if (e.key === 'ArrowDown') y_speed = 1;
+        if (e.key === 'ArrowLeft') x_speed = -1;
+        if (e.key === 'ArrowRight') x_speed = 1;
 
+       updatePlayerDirection()
+      }
+    });
 
- 
+    $(document).keyup(e => {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') y_speed = 0;
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') x_speed = 0;
 
+        updatePlayerDirection()
+      }
 
-        
-        // Update player coords
- //       Object.keys(players).forEach((item, index) => {
-      //    console.log(players[item])
-       //   console.log(users);
+    });
 
-       //   let userIndex = findIndex(item);
-          //console.log('reeeeee', users[userIndex.index].coords)
-
-        //  players[item].x = users[userIndex.index].coords.x;
-        //  players[item].y = users[userIndex.index].coords.y;
-          //players[item].draw();
-     //   });
-
-    //  })
-
-
+//      socket.on('send_coords_to_client', val => {
+//      	for (let key in val) {
+//      		if (key !== socketID) {
+//      			if (key in players === false) {
+//      				players[key] = val[key];
+//      				players[key] = new Player(val[key].x, val[key].x);
+//      			} else {
+//              players[key].x = val[key].x;
+//              players[key].y = val[key].y;
+//            }
+//      		}
+//      	}
+//      });
 
 
     </script>
+    {{!-- <script type="text/javascript">
+      const socket = io.connect('/');
+
+      let socketID;
+      let players = {};
+
+      let startCheck, sendTimer;
+
+      socket.on('send_id_to_client', val => {
+      	console.log(`Your socket id is ${val}`);
+      	socketID = val;
+      });
+
+      startCheck = setInterval(function() {
+      	if (socketID !== undefined) {
+      		clearInterval(startCheck);
+      		startSendCoordsTimer();
+      	}
+      }, 10);
+
+      function startSendCoordsTimer() {
+      	sendTimer = setInterval(sendCoordsToServer, 15);
+      }
+
+      function sendCoordsToServer() {
+      	socket.emit('client_update_coords', {
+      		x: callum.x,
+      		y: callum.y
+      	});
+      }
+
+
+
+
+      
+      </script> --}}
   </body>
 </html>

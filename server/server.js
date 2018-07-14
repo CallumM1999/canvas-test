@@ -1,86 +1,94 @@
 const express = require('express');
-const path = require('path');
 
 const app = express();
 const hbs = require('express-handlebars');
 // const io = require('socket.io')(server);
 
-app.engine('handlebars', hbs({defaultLayout: 'main'}));
+app.engine('handlebars', hbs({
+	defaultLayout: 'main'
+}));
 app.set('view engine', 'handlebars');
 app.use(express.static('public'));
 
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
-const fs = require('fs');
 
 const port = process.env.PORT || 3000;
 
 server.listen(port, () => console.log(`Server started on PORT ${port}`));
 
-app.get('/', function (req, res) {
-  // res.sendFile('public/index.html', {root: './'});
-  res.render('home', {port});
+app.get('/', function(req, res) {
+	// res.sendFile('public/index.html', {root: './'});
+	res.render('home', {
+		port
+	});
 });
-
-// const findIndex = (socketVal) => {
-//   let returnVal = {index: null};
-
-//   clients.forEach((item, index) => {
-//     if (item.id == socketVal) {
-//       returnVal = {index, socket: item.socket, coords: {x: item.coords.x, y: item.coords.y}};
-//       return returnVal;
-//     }
-//   });
-//   return returnVal;
-// }; 
-
-
-
-// let clients = [
-//   // {id: undefined,
-//   // coords: {
-//   //   x: 0,
-//   //   y: 0
-//   // }}
-// ];
 
 let clients = {};
 
+function addClient(id, username) {
+  console.log('adding client')
+  clients[id] = {
+    username,
+    x: 10,
+    y: 0,
+    x_speed: 0,
+    y_speed: 0,
+    color: 'red'
+  }
+  //console.log(clients)
+}
+
+
 io.on('connection', socket => {
-  console.log('user connected');
-  console.log(socket.id);
-
-  // add client to clients object
-  clients[socket.id] = {x:0, y:0};
-
-  socket.emit('send_id_to_client', socket.id);
-
-  console.log(clients)
-
-
-
-
-
-  socket.on('client_update_coords', coords => {
-    clients[socket.id] = {x: coords.x, y: coords.y};
-    // console.log(clients)
+  socket.on('new_client_connect', data => {
+    addClient(socket.id, data.username);
   });
+  
+  socket.on('update_player_direction', data => {
+    console.log(data)
+    clients[socket.id].x_speed = data.x_speed;
+    clients[socket.id].y_speed = data.y_speed;
+  })
 
-  socket.on('disconnect', () => {
-    delete clients[socket.id]; 
-    console.log('client disconnected', socket.id);
-    io.emit('client_disconnect', socket.id);
-  });
+	// socket.emit('send_id_to_client', socket.id);
+
+	// console.log(clients);
+
+	// socket.on('client_update_coords', coords => {
+	// 	clients[socket.id] = {
+	// 		x: coords.x,
+	// 		y: coords.y
+	// 	};
+	// });
+
+	socket.on('disconnect', () => {
+		delete clients[socket.id];
+		console.log('client disconnected', socket.id);
+		io.emit('client_disconnect', socket.id);
+	});
 });
 
+function updateUserCoords() {
+  for (let key in clients) {
+    clients[key].x += clients[key].x_speed;
+    clients[key].y += clients[key].y_speed;
+  }
+}
 
 function sendCoordsToClients() {
-  // console.log(clients);
-  // console.log('============================')
-  io.volatile.emit('send_coords_to_client', clients);
-  // console.log('sending coords')
-};
+  let returnObj = {};
+  for(key in clients) {
+    returnObj[key] = {
+      x: clients[key].x,
+      y: clients[key].y,
+      color: clients[key].color
+    }
+  }
+  io.volatile.emit('send_coords_to_clients', returnObj);
+}
 
 const repeater = setInterval(function() {
-  sendCoordsToClients()
-}, 15);
+  updateUserCoords();
+	sendCoordsToClients();
+}, 10);
