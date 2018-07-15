@@ -11,8 +11,12 @@ var $results = $("#results");
 var fps, fpsInterval, startTime, now, then, elapsed;
 var $canvas = $('canvas');
 
+var width = 2000;
+var height = 1000;
+
 var bgImage = new Image();
- bgImage.src = "https://raw.github.com/lostdecade/simple_canvas_game/master/images/background.png";
+ bgImage.src = "https://wallpapertag.com/wallpaper/full/6/0/0/294499-large-pattern-background-2560x1600.jpg";
+
 const ctx = this.canvas.getContext('2d');
 const $document = $(document);
 
@@ -48,7 +52,7 @@ class User {
 		
 	}
 	draw() {
-        ctx.drawImage(bgImage, -this.x, -this.y);
+        ctx.drawImage(bgImage, -this.x + 150, -this.y + 150);
 
 		ctx.fillStyle = this.color;
 		ctx.fillRect(150, 150, this.width, this.height);
@@ -84,7 +88,7 @@ function animate() {
 		// Get ready for next frame by setting then=now, but...
 		// Also, adjust for fpsInterval not being multiple of 16.67
 		// then = now - (elapsed % fpsInterval);
-		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		ctx.clearRect(0, 0, 300, 300);
 
 		//console.log(players);
 		players[socket.id].draw();

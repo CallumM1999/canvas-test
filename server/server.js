@@ -30,7 +30,7 @@ function addClient(id, username) {
   console.log('adding client')
   clients[id] = {
     username,
-    x: 10,
+    x: 0,
     y: 0,
     x_speed: 0,
     y_speed: 0,
@@ -51,17 +51,6 @@ io.on('connection', socket => {
     clients[socket.id].y_speed = data.y_speed;
   })
 
-	// socket.emit('send_id_to_client', socket.id);
-
-	// console.log(clients);
-
-	// socket.on('client_update_coords', coords => {
-	// 	clients[socket.id] = {
-	// 		x: coords.x,
-	// 		y: coords.y
-	// 	};
-	// });
-
 	socket.on('disconnect', () => {
 		delete clients[socket.id];
 		console.log('client disconnected', socket.id);
@@ -71,19 +60,26 @@ io.on('connection', socket => {
 
 function updateUserCoords() {
   for (let key in clients) {
-    console.log(clients[key].y)
-    if (clients[key].x > -150 && clients[key].x_speed === -1) {
-      clients[key].x += clients[key].x_speed;
+    let x = clients[key].x;
+    let y = clients[key].y;
+
+    let x_speed = clients[key].x_speed;
+    let y_speed = clients[key].y_speed;
+
+    console.log(`${x} : ${y}`);
+
+    if (x > 0 && x_speed === -1) {
+      clients[key].x += x_speed;
     }
-    if (clients[key].x <= 330 && clients[key].x_speed === 1) {
-      clients[key].x += clients[key].x_speed;
+    if (x <= 2530 && x_speed === 1) {
+      clients[key].x += x_speed;
     }
 
-    if (clients[key].y > -150 && clients[key].y_speed === -1) {
-      clients[key].y += clients[key].y_speed;
+    if (y > 0 && y_speed === -1) {
+      clients[key].y += y_speed;
     }
-    if (clients[key].y <= 300 && clients[key].y_speed === 1) {
-      clients[key].y += clients[key].y_speed;
+    if (y <= 1570 && y_speed === 1) {
+      clients[key].y += y_speed;
     }
   }
 }
