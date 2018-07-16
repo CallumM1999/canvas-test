@@ -1,67 +1,53 @@
-/*
-  Create circle object that moves
-  on each refresh, send coords to server (send volitile message)
+let stop = false;
+let frameCount = 0;
+let $results = $("#results");
+let fps, fpsInterval, startTime, now, then, elapsed;
+let $canvas = $('canvas');
 
-  create function to draw other objets controlled by other users
-https://stackoverflow.com/questions/19764018/controlling-fps-with-requestanimationframe
-*/
-var stop = false;
-var frameCount = 0;
-var $results = $("#results");
-var fps, fpsInterval, startTime, now, then, elapsed;
-var $canvas = $('canvas');
-
-var width = 2000;
-var height = 1000;
-
-var bgImage = new Image();
- bgImage.src = "https://wallpapertag.com/wallpaper/full/6/0/0/294499-large-pattern-background-2560x1600.jpg";
+let bgImage = new Image();
+bgImage.src = "https://wallpapertag.com/wallpaper/full/6/0/0/294499-large-pattern-background-2560x1600.jpg";
 
 const ctx = this.canvas.getContext('2d');
 const $document = $(document);
 
+/*
 const colors = [
-    '#FBD40E',
-    '#B1CD1B',
-    '#6E8B5E',
-    '#22534D',
-    '#1B262A'
+	'#FBD40E',
+	'#B1CD1B',
+	'#6E8B5E',
+	'#22534D',
+	'#1B262A'
 ];
+*/
 
 class Player {
-	constructor(color='black') {
+	constructor() {
 		this.width = 30;
 		this.height = 30;
-		// this.x = x;
-		// this.y = y;
-		this.color = color;
+		this.color = 'black';
 	}
 	draw() {
 		ctx.fillStyle = this.color;
-        ctx.fillRect(this.x - players[socket.id].x + 150,
-             this.y - players[socket.id].y + 150,
-              this.width, this.height);
+		ctx.fillRect(this.x - players[socket.id].x + 150,
+			this.y - players[socket.id].y + 150,
+			this.width, this.height);
 	}
 }
 
 class User {
 	constructor() {
-        this.width = 30;
-        this.height = 30;
-        this.color = 'red';
-		
+		this.width = 30;
+		this.height = 30;
+		this.color = 'red';
 	}
 	draw() {
-        ctx.drawImage(bgImage, -this.x + 150, -this.y + 150);
-
+		ctx.drawImage(bgImage, -this.x + 150, -this.y + 150);
 		ctx.fillStyle = this.color;
 		ctx.fillRect(150, 150, this.width, this.height);
 	}
 }
 
-// var callum = new User('#868686');
 startAnimating(60);
-
 
 function startAnimating(fps = 20) {
 	fpsInterval = 1000 / fps;
@@ -90,18 +76,13 @@ function animate() {
 		// then = now - (elapsed % fpsInterval);
 		ctx.clearRect(0, 0, 300, 300);
 
-		//console.log(players);
 		players[socket.id].draw();
 
 		for (let key in players) {
 			if (key !== socket.id) {
-                players[key].draw();
-            }
+				players[key].draw();
+			}
 		}
-
-        // callum.update();
-        // console.log(socket.id)
-        // console.log(players)
 
 		// TESTING...Report #seconds since start and achieved fps.
 		var sinceStart = now - startTime;
@@ -109,3 +90,71 @@ function animate() {
 		$results.text("Elapsed time= " + Math.round(sinceStart / 1000 * 100) / 100 + " secs @ " + currentFps + " fps.");
 	}
 }
+
+const socket = io.connect('/');
+let players = {};
+
+let y_speed = 0;
+let x_speed = 0;
+
+socket.on('connect', () => {
+	socket.emit('new_client_connect', {
+		username: 'user1'
+	});
+});
+
+
+socket.on('send_coords_to_clients', data => {
+	//console.log(data)
+	for (let key in data) {
+		if (key in players === false) {
+			players[key] = data[key];
+			if (key === socket.id) {
+				players[key] = new User();
+			} else {
+				players[key] = new Player();
+			}
+		} else {
+			players[key].x = data[key].x;
+			players[key].y = data[key].y;
+			players[key].color = data[key].color;
+		}
+	}
+	//console.log(players)
+});
+
+
+socket.on('client_disconnect', id => {
+	delete players[id];
+});
+
+socket.on('collision', data => {
+	alert('collision');
+});
+
+function updatePlayerDirection() {
+	socket.emit('update_player_direction', {
+		x_speed, y_speed
+	});
+}
+
+$(document).keydown(e => {
+	if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+		if (e.key === 'ArrowUp') y_speed = -1;
+		if (e.key === 'ArrowDown') y_speed = 1;
+		if (e.key === 'ArrowLeft') x_speed = -1;
+		if (e.key === 'ArrowRight') x_speed = 1;
+
+		updatePlayerDirection();
+	}
+});
+
+$(document).keyup(e => {
+	if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+		if (e.key === 'ArrowUp' || e.key === 'ArrowDown') y_speed = 0;
+		if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') x_speed = 0;
+
+
+	}
+
+});

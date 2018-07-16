@@ -27,29 +27,25 @@ app.get('/', function(req, res) {
 let clients = {};
 
 function addClient(id, username) {
-  console.log('adding client')
-  clients[id] = {
-    username,
-    x: 0,
-    y: 0,
-    x_speed: 0,
-    y_speed: 0,
-    color: 'red'
-  }
-  //console.log(clients)
+	console.log('adding client');
+	clients[id] = {
+		username,
+		x: 0,
+			y: 0,
+			x_speed: 0,
+			y_speed: 0
+	};
 }
 
-
 io.on('connection', socket => {
-  socket.on('new_client_connect', data => {
-    addClient(socket.id, data.username);
-  });
-  
-  socket.on('update_player_direction', data => {
-    console.log(data)
-    clients[socket.id].x_speed = data.x_speed;
-    clients[socket.id].y_speed = data.y_speed;
-  })
+	socket.on('new_client_connect', data => {
+		addClient(socket.id, data.username);
+	});
+
+	socket.on('update_player_direction', data => {
+		clients[socket.id].x_speed = data.x_speed;
+		clients[socket.id].y_speed = data.y_speed;
+	});
 
 	socket.on('disconnect', () => {
 		delete clients[socket.id];
@@ -59,44 +55,62 @@ io.on('connection', socket => {
 });
 
 function updateUserCoords() {
-  for (let key in clients) {
-    let x = clients[key].x;
-    let y = clients[key].y;
+	for (let key in clients) {
+		if (clients.hasOwnProperty(key)) {
+			//console.log('keys:' ,key);
+			let x = clients[key].x;
+			let y = clients[key].y;
 
-    let x_speed = clients[key].x_speed;
-    let y_speed = clients[key].y_speed;
+			let x_speed = clients[key].x_speed;
+			let y_speed = clients[key].y_speed;
 
-    console.log(`${x} : ${y}`);
+			let left_blocked = false;
+			let right_blocked = false;
+			let up_blocked = false;
+			let down_blocked = false;
 
-    if (x > 0 && x_speed === -1) {
-      clients[key].x += x_speed;
-    }
-    if (x <= 2530 && x_speed === 1) {
-      clients[key].x += x_speed;
-    }
+			for (let player_key in clients) {
+				if (player_key !== key) {
+					let player_x = clients[player_key].x;
+					let player_y = clients[player_key].y;
 
-    if (y > 0 && y_speed === -1) {
-      clients[key].y += y_speed;
-    }
-    if (y <= 1570 && y_speed === 1) {
-      clients[key].y += y_speed;
-    }
-  }
+					// Check X collisions
+					if (y >= player_y - 30 && y <= player_y + 30) {
+						if (x < player_x && x - player_x > -32) right_blocked = true;
+						if ((x > player_x && x - player_x < 32)) left_blocked = true;
+					}
+
+					// Check Y collisions
+					if (x >= player_x - 30 && x <= player_x + 30) {
+						if (y < player_y && y - player_y > -32) down_blocked = true;
+						if (y > player_y && y - player_y < 32) up_blocked = true;
+					}
+				}
+			}
+
+			if (!left_blocked && x_speed === -1 && x > 0) clients[key].x -= 1;
+			if (!right_blocked && x_speed === 1 && x < 2530) clients[key].x += 1;
+			if (!up_blocked && y_speed === -1 && y > 0) clients[key].y -= 1;
+			if (!down_blocked && y_speed === 1 && y < 1570) clients[key].y += 1;
+		}
+	}
 }
 
 function sendCoordsToClients() {
-  let returnObj = {};
-  for(key in clients) {
-    returnObj[key] = {
-      x: clients[key].x,
-      y: clients[key].y,
-      color: clients[key].color
-    }
-  }
-  io.volatile.emit('send_coords_to_clients', returnObj);
+	let returnObj = {};
+	for (let key in clients) {
+		if (clients.hasOwnProperty(key)) {
+			returnObj[key] = {
+				x: clients[key].x,
+				y: clients[key].y,
+				color: clients[key].color
+			};
+		}
+	}
+	io.volatile.emit('send_coords_to_clients', returnObj);
 }
 
 const repeater = setInterval(function() {
-  updateUserCoords();
+	updateUserCoords();
 	sendCoordsToClients();
 }, 10);
