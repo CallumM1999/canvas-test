@@ -3,11 +3,13 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    {{!-- <meta http-equiv="refresh" content="3" > --}}
     <title>Canvas</title>
     <style>
       canvas {
         border: 1px solid #000;
         background-color: #ddd;
+        margin: 20px;
 
       }
       body {
@@ -18,12 +20,12 @@
   </head>
   <body>
 
-    <p id="results">Results:</p>
+    {{!-- <p id="results">Results:</p> --}}
     <canvas id="canvas" width=300 height=300></canvas>
 
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
-    <script type="text/javascript" src="js/canvas.js"></script>
-    {{!-- <script type="text/javascript" src="js/canvas.1.js"></script> --}}
+    {{!-- <script type="text/javascript" src="js/canvas.js"></script> --}}
+    <script type="text/javascript" src="js/canvas.1.js"></script>
   </body>
 </html>

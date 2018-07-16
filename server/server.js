@@ -22,7 +22,7 @@ app.get('/', function(req, res) {
 	res.render('home', {
 		port
 	});
-});
+}); 
 
 let clients = {};
 
@@ -94,6 +94,7 @@ function updateUserCoords() {
 			if (!down_blocked && y_speed === 1 && y < 1570) clients[key].y += 1;
 		}
 	}
+	console.log(clients)
 }
 
 function sendCoordsToClients() {
