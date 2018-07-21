@@ -135,4 +135,4 @@ function sendCoordsToClients() {
 setInterval(function() {
     updateUserCoords();
     sendCoordsToClients();
-}, 10);
+}, 5);
