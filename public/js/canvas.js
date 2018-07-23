@@ -6,7 +6,10 @@ const DOM = {
 let players = {};
 
 let user = {
-	direction: {x: 0, y: 0},
+	direction: {
+		x: 0,
+		y: 0
+	},
 	username: 'Callum',
 	keyDown: document.onkeydown = e => {
 		if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
@@ -35,8 +38,8 @@ class Player {
 	draw() {
 		gameEnv.ctx.fillStyle = this.color;
 		gameEnv.ctx.fillRect(
-			this.x -players[socket.id].x +gameEnv.canvas.h_width,
-			this.y -players[socket.id].y +gameEnv.canvas.h_width,
+			this.x - players[socket.id].x + gameEnv.canvas.h_width - 15,
+			this.y - players[socket.id].y + gameEnv.canvas.h_width - 15,
 			this.width,
 			this.height
 		);
@@ -53,42 +56,42 @@ class User extends Player {
 		const ctx = gameEnv.ctx;
 
 		ctx.fillStyle = 'white';
-		ctx.fillRect(-this.x +gameEnv.canvas.h_width, -this.y +gameEnv.canvas.h_height, gameEnv.map.width, gameEnv.map.height);
+		ctx.fillRect(-this.x + gameEnv.canvas.h_width - 15, -this.y + gameEnv.canvas.h_height - 15, gameEnv.map.width, gameEnv.map.height);
 
 		ctx.strokeStyle = 'black';
-		for (let i = gameEnv.canvas.h_width -this.x; i < gameEnv.canvas.h_width +gameEnv.map.width +1 - this.x; i += 20) {
+		for (let i = gameEnv.canvas.h_width - this.x - 15; i < gameEnv.canvas.h_width + gameEnv.map.width + 1 - this.x; i += 20) {
 			ctx.beginPath();
-			ctx.moveTo(i, gameEnv.canvas.h_width - this.y);
-			ctx.lineTo(i, gameEnv.map.height +gameEnv.canvas.h_width -this.y);
+			ctx.moveTo(i, gameEnv.canvas.h_width - this.y - 15);
+			ctx.lineTo(i, gameEnv.map.height + gameEnv.canvas.h_width - this.y - 15);
 			ctx.stroke();
-		  }
-		  
-		  for (let i = gameEnv.canvas.h_height -this.y; i < gameEnv.canvas.h_width +gameEnv.map.height +1 -this.y; i += 20) {
+		}
+
+		for (let i = gameEnv.canvas.h_height - this.y - 15; i < gameEnv.canvas.h_width + gameEnv.map.height + 1 - this.y; i += 20) {
 			ctx.beginPath();
-			ctx.moveTo(gameEnv.canvas.h_height -this.x, i);
-			ctx.lineTo(gameEnv.map.width +gameEnv.canvas.h_width -this.x, i);
+			ctx.moveTo(gameEnv.canvas.h_height - this.x - 15, i);
+			ctx.lineTo(gameEnv.map.width + gameEnv.canvas.h_width - this.x - 15, i);
 			ctx.stroke();
-		  }
+		}
 
 		ctx.fillStyle = 'red';
-		ctx.fillRect(gameEnv.canvas.h_width, gameEnv.canvas.h_height, this.width, this.height);
+		ctx.fillRect(gameEnv.canvas.h_width - (this.width / 2), gameEnv.canvas.h_height - (this.height / 2), this.width, this.height);
 	}
 }
 
 const gameEnv = {
 	// canvas: DOM.canvas, 
 	canvas: {
-		width: 300,
-		height: 300,
+		width: 500,
+		height: 500,
 		h_width: 150,
-		h_height: 150	
+		h_height: 150
 	},
 	map: {
 		width: 600,
 		height: 400
 	},
 	ctx: DOM.canvas.getContext('2d'),
-	background_url: "https://wallpapertag.com/wallpaper/full/6/0/0/294499-large-pattern-background-2560x1600.jpg",
+	// background_url: "https://wallpapertag.com/wallpaper/full/6/0/0/294499-large-pattern-background-2560x1600.jpg",
 	animate_interval: 1000 / 75,
 	bgImage: new Image(),
 	animate: function() {
@@ -96,11 +99,22 @@ const gameEnv = {
 
 		ctx.clearRect(0, 0, gameEnv.canvas.width, gameEnv.canvas.height);
 
-		console.log(players)
+		// console.log(players)
 		if (players.hasOwnProperty(socket.id)) players[socket.id].draw();
+		let x = players[socket.id].x;
+		let y = players[socket.id].y;
+		//const player_width = 30;
+		//const player_height = 30;
 
 		for (let key in players) {
-			if (key !== socket.id) players[key].draw();
+			if (key !== socket.id) {
+				let player_x = players[key].x;
+				let player_y = players[key].y;
+
+				if ((player_x < x + 150 && player_x > x - 180) && (player_y < y + 150 && player_y > y - 180)) {
+					players[key].draw();
+				}
+			}
 		}
 		getRate();
 
@@ -125,17 +139,15 @@ socket.on('connect', () => {
 	});
 });
 
-var lastCalledTime;
-var fps;
-
 function getRate() {
+	let fps, lastCalledTime, output, delta;
 	if (!lastCalledTime) {
 		lastCalledTime = performance.now();
-		fps - 0;
+		fps = 0;
 		return;
 	}
 	fps = (performance.now() - lastCalledTime) / 1000;
-	delta = (performance.now() - lastCalledTime)/1000;
+	delta = (performance.now() - lastCalledTime) / 1000;
 	lastCalledTime = performance.now();
 	output = Math.floor(1 / delta);
 
@@ -144,7 +156,7 @@ function getRate() {
 }
 
 socket.on('send_coords_to_clients', data => {
-	
+
 
 
 	// getRate();
