@@ -1,13 +1,7 @@
 const express = require('express');
 
 const app = express();
-const hbs = require('express-handlebars');
-// const io = require('socket.io')(server);
 
-app.engine('handlebars', hbs({
-    defaultLayout: 'main'
-}));
-app.set('view engine', 'handlebars');
 app.use(express.static('public'));
 
 const server = require('http').Server(app);
@@ -18,20 +12,21 @@ const port = process.env.PORT || 3000;
 server.listen(port, () => console.log(`Server started on PORT ${port}`));
 
 app.get('/', function(req, res) {
-    // res.sendFile('public/index.html', {root: './'});
-    res.render('home', {
-        port
-    });
+ 
 });
 
 let clients = {};
+
+const width = 600;
+const height = 400;
+const player_width = player_height = 30;
 
 function addClient(id, username) {
     console.log('adding client');
     clients[id] = {
         username,
-        x: 0,
-        y: 0,
+        x: Math.floor(Math.random() * (600 -30)),
+        y: Math.floor(Math.random() * (400 -30)),
         x_speed: 0,
         y_speed: 0
     };
@@ -94,11 +89,11 @@ function updateUserCoords() {
                     player_x = clients[player_key].x;
                     player_y = clients[player_key].y;
 
-                    if ((player_x > x - 30 -0 && player_x < x + 30 +0) && (player_y > y - 30 -0 && player_y < y + 30 +0)) {
-                        if (x < player_x && (y > player_y -29 && y < player_y +29)) right_blocked = true;
-                        if (x > player_x && (y > player_y -29 && y < player_y +29)) left_blocked = true;
-                        if (y < player_y && (x > player_x -29 && x < player_x +29)) down_blocked = true;
-                        if (y > player_y && (x > player_x -29 && x < player_x +29)) up_blocked = true;
+                    if ((player_x > x -player_width && player_x < x +player_width) && (player_y > y -player_height && player_y < y +player_height)) {
+                        if (x < player_x && (y > player_y - player_width +1 && y < player_y + player_width -1)) right_blocked = true;
+                        if (x > player_x && (y > player_y - player_width +1 && y < player_y + player_width -1)) left_blocked = true;
+                        if (y < player_y && (x > player_x - player_height +1 && x < player_x + player_height -1)) down_blocked = true;
+                        if (y > player_y && (x > player_x - player_height +1 && x < player_x + player_height -1)) up_blocked = true;
                         // console.log(`left:${left_blocked} right:${right_blocked} up:${up_blocked} down:${down_blocked}`);
                     }
                 }
@@ -106,11 +101,11 @@ function updateUserCoords() {
 			
 			// width/height - 30px
 			// 600 x 400 (add 1 for grid)
-
+            // change ammount must be +-1 or there will be calculation errors
             if (!left_blocked && x_speed === -1 && x > 0) clients[key].x -= 1;
-            else if (!right_blocked && x_speed === 1 && x < 571) clients[key].x += 1;
+            else if (!right_blocked && x_speed === 1 && x < width - player_width -1) clients[key].x += 1;
             if (!up_blocked && y_speed === -1 && y > 0) clients[key].y -= 1;
-            else if (!down_blocked && y_speed === 1 && y < 371) clients[key].y += 1;
+            else if (!down_blocked && y_speed === 1 && y < height - player_height - 1) clients[key].y += 1;
         }
     }
     getRate();
@@ -134,5 +129,10 @@ function sendCoordsToClients() {
 
 setInterval(function() {
     updateUserCoords();
+    // sendCoordsToClients();
+}, 1000/120);
+
+setInterval(function() {
+    // updateUserCoords();
     sendCoordsToClients();
-}, 5);
+}, 1000/60);
