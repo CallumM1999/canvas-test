@@ -1,6 +1,7 @@
 const DOM = {
 	canvas: document.querySelector('#canvas'),
-	fps_counter: document.querySelector('#fps span')
+	fps_counter: document.querySelector('#fps span'),
+	eat_btn: document.querySelector('#eat')
 };
 
 let players = {};
@@ -30,51 +31,51 @@ let user = {
 };
 
 class Player {
-	constructor() {
-		this.width = 30;
-		this.height = 30;
-		this.color = 'black';
+	constructor(size, color) {
+		// console.log('size', size)
+		this.size = size;
+		// this.height = size;
+		this.color = color;
 	}
 	draw() {
 		gameEnv.ctx.fillStyle = this.color;
 		gameEnv.ctx.fillRect(
-			this.x - players[socket.id].x + gameEnv.canvas.h_width - 15,
-			this.y - players[socket.id].y + gameEnv.canvas.h_width - 15,
-			this.width,
-			this.height
+			this.x -players[socket.id].x +gameEnv.canvas.h_width -(players[socket.id].size /2),
+			this.y -players[socket.id].y +gameEnv.canvas.h_width -(players[socket.id].size /2),
+			this.size,
+			this.size
 		);
 	}
 }
 
 class User extends Player {
-	constructor() {
-		super();
-		this.color = 'red';
+	constructor(size, color) {
+		super(size, color);
 	}
 	draw() {
-		// console.log(gameEnv)
 		const ctx = gameEnv.ctx;
 
 		ctx.fillStyle = 'white';
-		ctx.fillRect(-this.x + gameEnv.canvas.h_width - 15, -this.y + gameEnv.canvas.h_height - 15, gameEnv.map.width, gameEnv.map.height);
+		ctx.fillRect(gameEnv.canvas.h_width -(this.size /2) -this.x, gameEnv.canvas.h_height -(this.size /2) -this.y, gameEnv.map.width, gameEnv.map.height);
 
 		ctx.strokeStyle = 'black';
-		for (let i = gameEnv.canvas.h_width - this.x - 15; i < gameEnv.canvas.h_width + gameEnv.map.width + 1 - this.x; i += 20) {
+		for (let i = gameEnv.canvas.h_width -this.x -(this.size /2); i < gameEnv.canvas.h_width +gameEnv.map.width -this.x -(this.size /2) +1; i += 20) {
 			ctx.beginPath();
-			ctx.moveTo(i, gameEnv.canvas.h_width - this.y - 15);
-			ctx.lineTo(i, gameEnv.map.height + gameEnv.canvas.h_width - this.y - 15);
+			ctx.moveTo(i, gameEnv.canvas.h_width -this.y -(this.size /2));
+			ctx.lineTo(i, gameEnv.map.height +gameEnv.canvas.h_width -this.y -(this.size /2));
 			ctx.stroke();
 		}
 
-		for (let i = gameEnv.canvas.h_height - this.y - 15; i < gameEnv.canvas.h_width + gameEnv.map.height + 1 - this.y; i += 20) {
+		for (let i = gameEnv.canvas.h_height -this.y -(this.size /2); i < gameEnv.canvas.h_height +gameEnv.map.height -this.y -(this.size /2) +1; i += 20) {
 			ctx.beginPath();
-			ctx.moveTo(gameEnv.canvas.h_height - this.x - 15, i);
-			ctx.lineTo(gameEnv.map.width + gameEnv.canvas.h_width - this.x - 15, i);
+			ctx.moveTo(gameEnv.canvas.h_height - this.x - (this.size /2), i);
+			ctx.lineTo(gameEnv.map.width + gameEnv.canvas.h_width - this.x - (this.size /2), i);
 			ctx.stroke();
 		}
 
-		ctx.fillStyle = 'red';
-		ctx.fillRect(gameEnv.canvas.h_width - (this.width / 2), gameEnv.canvas.h_height - (this.height / 2), this.width, this.height);
+		ctx.fillStyle = this.color;
+		// ctx.fillRect(gameEnv.canvas.h_width - (this.size / 2), gameEnv.canvas.h_height - (this.size / 2), this.size, this.size);
+		ctx.fillRect(gameEnv.canvas.h_width -(this.size /2), gameEnv.canvas.h_height -(this.size /2), this.size, this.size);
 	}
 }
 
@@ -83,8 +84,8 @@ const gameEnv = {
 	canvas: {
 		width: 500,
 		height: 500,
-		h_width: 150,
-		h_height: 150
+		h_width: 250,
+		h_height: 250
 	},
 	map: {
 		width: 600,
@@ -100,22 +101,31 @@ const gameEnv = {
 		ctx.clearRect(0, 0, gameEnv.canvas.width, gameEnv.canvas.height);
 
 		// console.log(players)
-		if (players.hasOwnProperty(socket.id)) players[socket.id].draw();
-		let x = players[socket.id].x;
-		let y = players[socket.id].y;
-		//const player_width = 30;
-		//const player_height = 30;
+		if (players.hasOwnProperty(socket.id)) {
+			players[socket.id].draw();
 
-		for (let key in players) {
-			if (key !== socket.id) {
-				let player_x = players[key].x;
-				let player_y = players[key].y;
-
-				if ((player_x < x + 150 && player_x > x - 180) && (player_y < y + 150 && player_y > y - 180)) {
-					players[key].draw();
+			let x = players[socket.id].x;
+			let y = players[socket.id].y;
+			//const player_width = 30;
+			//const player_height = 30;
+	
+			for (let key in players) {
+				if (key !== socket.id) {
+					if (players.hasOwnProperty(key)) {
+						let player_x = players[key].x;
+						let player_y = players[key].y;
+		
+						// if ((player_x < x + canvas.h_width && player_x > x - canvas.h_width -player.size) && (player_y < y + canvas.h_height && player_y > y - canvas.h_height - player.size)) {
+							players[key].draw();
+						// }
+					}
+	
 				}
 			}
+		} else {
+			console.log('animate not ready')
 		}
+
 		getRate();
 
 	},
@@ -131,6 +141,11 @@ const gameEnv = {
 
 gameEnv.startGame();
 
+function eat() {
+	socket.emit('player_eat');
+
+}
+
 const socket = io.connect('/');
 
 socket.on('connect', () => {
@@ -139,40 +154,41 @@ socket.on('connect', () => {
 	});
 });
 
+let fps;
+let lastCalledTime;
 function getRate() {
-	let fps, lastCalledTime, output, delta;
+	let output, delta;
 	if (!lastCalledTime) {
 		lastCalledTime = performance.now();
 		fps = 0;
-		return;
+		// return;
+	} else {
+		fps = (performance.now() - lastCalledTime) / 1000;
+		delta = (performance.now() - lastCalledTime) / 1000;
+		lastCalledTime = performance.now();
+		output = Math.floor(1 / delta);
 	}
-	fps = (performance.now() - lastCalledTime) / 1000;
-	delta = (performance.now() - lastCalledTime) / 1000;
-	lastCalledTime = performance.now();
-	output = Math.floor(1 / delta);
-
 	// console.log(output + ' seconds')
 	DOM.fps_counter.innerHTML = output;
 }
 
 socket.on('send_coords_to_clients', data => {
-
-
-
 	// getRate();
 
 	for (let key in data) {
 		if (key in players === false) {
 			players[key] = data[key];
 			if (key === socket.id) {
-				players[key] = new User();
+				players[key] = new User(data[key].size, data[key].color);
 			} else {
-				players[key] = new Player();
+				players[key] = new Player(data[key].size, data[key].color);
 			}
 		} else {
 			players[key].x = data[key].x;
 			players[key].y = data[key].y;
-			players[key].color = data[key].color;
+			players[key].size = data[key].size;
+			// players[key].height = data[key].size;
+			
 		}
 	}
 

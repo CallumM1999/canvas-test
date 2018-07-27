@@ -17,17 +17,15 @@ app.get('/', function(req, res) {
 
 let clients = {};
 
-const width = 600;
-const height = 400;
-const player_width = 30;
-const player_height = 30;
+const canvas_width = 600;
+const canvas_height = 400;
+const user_width = 30;
+const user_height = 30;
 
 function generateNewCoords() {
 	let x = Math.floor(Math.random() * (600 - 30));
 	let y = Math.floor(Math.random() * (400 - 30));
-	return {
-		x, y
-	};
+	return {x, y};
 }
 
 function tryNewCoords(coords) {
@@ -38,9 +36,10 @@ function tryNewCoords(coords) {
 		if (clients.hasOwnProperty(key)) {
 			let client_x = clients[key].x;
 			let client_y = clients[key].y;
+			let client_size = clients[key].size;
 
 			// +5 spacing 
-			if ((client_x > x - 30 - 5 && client_x < x + 30 + 5) && (client_y > y - 30 - 5 && client_y < y + 30 + 5)) {
+			if ((client_x > x -client_size - 5 && client_x < x +client_size + 5) && (client_y > y -client_size - 5 && client_y < y +client_size + 5)) {
 				return true;
 			}
 		}
@@ -65,9 +64,11 @@ function addClient(id, username) {
 	clients[id] = {
 		username,
 		x: coords.x,
-			y: coords.y,
-			x_speed: 0,
-			y_speed: 0
+		y: coords.y,
+		x_speed: 0,
+		y_speed: 0,
+		size: 15,
+		color: 'red'
 	};
 }
 
@@ -82,6 +83,14 @@ io.on('connection', socket => {
 		clients[socket.id].y_speed = data.y_speed;
 	});
 
+	socket.on('player_eat', () => {
+		console.log('player ate');
+		clients[socket.id].size += 2;
+		clients[socket.id].x -= 1;
+		clients[socket.id].y -= 1;
+		// console.log(clients[socket.id])
+	});
+
 	socket.on('disconnect', () => {
 		delete clients[socket.id];
 		console.log('client disconnected', socket.id);
@@ -90,8 +99,10 @@ io.on('connection', socket => {
 });
 
 
+
+let lastCalledTime, fps;
 function getRate() {
-	let time, fps, delta, output, lastCalledTime;
+	let time, delta, output;
 	time = process.hrtime()[0] * 1000 + process.hrtime()[1] / 1000000;
 	if (!lastCalledTime) {
 		lastCalledTime = time;
@@ -102,8 +113,9 @@ function getRate() {
 	delta = (time - lastCalledTime) / 1000;
 	lastCalledTime = time;
 	output = Math.floor(1 / delta);
+	// console.log('i')
 
-	console.log(output + ' seconds');
+	// console.log(output + ' seconds');
 }
 
 function updateUserCoords() {
@@ -112,14 +124,10 @@ function updateUserCoords() {
 	for (let key in clients) {
 		if (clients.hasOwnProperty(key)) {
 
-			({
-				x,
-				y
-			} = clients[key]);
-			({
-				x_speed,
-				y_speed
-			} = clients[key]);
+			
+			({x,y} = clients[key]);
+			({x_speed,y_speed} = clients[key]);
+			size = clients[key].size;
 
 			left_blocked = right_blocked = up_blocked = down_blocked = false;
 
@@ -128,14 +136,18 @@ function updateUserCoords() {
 
 					player_x = clients[player_key].x;
 					player_y = clients[player_key].y;
+					let player_size = clients[player_key].size;
 
-					if ((player_x > x - player_width && player_x < x + player_width) && (player_y > y - player_height && player_y < y + player_height)) {
-						if (x < player_x && (y > player_y - player_width + 1 && y < player_y + player_width - 1)) right_blocked = true;
-						if (x > player_x && (y > player_y - player_width + 1 && y < player_y + player_width - 1)) left_blocked = true;
-						if (y < player_y && (x > player_x - player_height + 1 && x < player_x + player_height - 1)) down_blocked = true;
-						if (y > player_y && (x > player_x - player_height + 1 && x < player_x + player_height - 1)) up_blocked = true;
+					if ((player_x > x -player_size && player_x < x +size) && (player_y > y -player_size && player_y < y +size)) {
+
+						if (x < player_x && (y > player_y -size +1 && y < player_y +player_size -1))       right_blocked = true;
+						if (x > player_x && (y > player_y -size +1 && y < player_y +player_size -1)) left_blocked = true;
+						if (y < player_y && (x > player_x -size +1 && x < player_x +player_size -1))        down_blocked = true;
+						if (y > player_y && (x > player_x -size +1 && x < player_x +player_size -1))   up_blocked = true;
+						
+
 						// console.log(`left:${left_blocked} right:${right_blocked} up:${up_blocked} down:${down_blocked}`);
-					}
+					} 
 				}
 			}
 
@@ -143,9 +155,9 @@ function updateUserCoords() {
 			// 600 x 400 (add 1 for grid)
 			// change ammount must be +-1 or there will be calculation errors
 			if (!left_blocked && x_speed === -1 && x > 0) clients[key].x -= 1;
-			else if (!right_blocked && x_speed === 1 && x < width - player_width - 1) clients[key].x += 1;
+			else if (!right_blocked && x_speed === 1 && x < canvas_width - size - 1) clients[key].x += 1;
 			if (!up_blocked && y_speed === -1 && y > 0) clients[key].y -= 1;
-			else if (!down_blocked && y_speed === 1 && y < height - player_height - 1) clients[key].y += 1;
+			else if (!down_blocked && y_speed === 1 && y < canvas_height - size - 1) clients[key].y += 1;
 		}
 	}
 	getRate();
@@ -159,7 +171,8 @@ function sendCoordsToClients() {
 			returnObj[key] = {
 				x: clients[key].x,
 				y: clients[key].y,
-				color: clients[key].color
+				color: clients[key].color,
+				size: clients[key].size
 			};
 
 		}
