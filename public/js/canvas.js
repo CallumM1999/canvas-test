@@ -4,44 +4,18 @@ const DOM = {
 	eat_btn: document.querySelector('#eat')
 };
 
-let players = {};
-
-let user = {
-	direction: {
-		x: 0,
-		y: 0
-	},
-	username: 'Callum',
-	keyDown: document.onkeydown = e => {
-		if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-			if (e.key === 'ArrowUp') user.direction.y = -1;
-			if (e.key === 'ArrowDown') user.direction.y = 1;
-			if (e.key === 'ArrowLeft') user.direction.x = -1;
-			if (e.key === 'ArrowRight') user.direction.x = 1;
-			updatePlayerDirection();
-		}
-	},
-	keyUp: document.onkeyup = e => {
-		if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-			if (e.key === 'ArrowUp' || e.key === 'ArrowDown') user.direction.y = 0;
-			if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') user.direction.x = 0;
-			updatePlayerDirection();
-		}
-	}
-};
-
 class Player {
 	constructor(size, color) {
-		// console.log('size', size)
 		this.size = size;
-		// this.height = size;
 		this.color = color;
 	}
 	draw() {
-		gameEnv.ctx.fillStyle = this.color;
-		gameEnv.ctx.fillRect(
-			this.x -players[socket.id].x +gameEnv.canvas.h_width -(players[socket.id].size /2),
-			this.y -players[socket.id].y +gameEnv.canvas.h_width -(players[socket.id].size /2),
+		const ctx = game.ctx;
+
+		ctx.fillStyle = this.color;
+		ctx.fillRect(
+			this.x -game.players[socket.id].x +game.canvas.h_width -(game.players[socket.id].size /2),
+			this.y -game.players[socket.id].y +game.canvas.h_height -(game.players[socket.id].size /2),
 			this.size,
 			this.size
 		);
@@ -53,104 +27,144 @@ class User extends Player {
 		super(size, color);
 	}
 	draw() {
-		const ctx = gameEnv.ctx;
+		const ctx = game.ctx;
+
+		// console.log(this)
 
 		ctx.fillStyle = 'white';
-		ctx.fillRect(gameEnv.canvas.h_width -(this.size /2) -this.x, gameEnv.canvas.h_height -(this.size /2) -this.y, gameEnv.map.width, gameEnv.map.height);
+		ctx.fillRect(
+			game.canvas.h_width -(this.size /2) -this.x,
+			game.canvas.h_height -(this.size /2) -this.y, 
+			game.map.width, 
+			game.map.height
+		);
 
 		ctx.strokeStyle = 'black';
-		for (let i = gameEnv.canvas.h_width -this.x -(this.size /2); i < gameEnv.canvas.h_width +gameEnv.map.width -this.x -(this.size /2) +1; i += 20) {
+		for (
+			let i = game.canvas.h_width -this.x -(this.size /2); 
+			i < game.canvas.h_width +game.map.width -this.x -(this.size /2) +1; 
+			i += 20
+		) {
 			ctx.beginPath();
-			ctx.moveTo(i, gameEnv.canvas.h_width -this.y -(this.size /2));
-			ctx.lineTo(i, gameEnv.map.height +gameEnv.canvas.h_width -this.y -(this.size /2));
+			ctx.moveTo(i, game.canvas.h_height -this.y -(this.size /2));
+			ctx.lineTo(i, game.map.height +game.canvas.h_height -this.y -(this.size /2));
 			ctx.stroke();
 		}
 
-		for (let i = gameEnv.canvas.h_height -this.y -(this.size /2); i < gameEnv.canvas.h_height +gameEnv.map.height -this.y -(this.size /2) +1; i += 20) {
+		for (
+			let i = game.canvas.h_height -this.y -(this.size /2); 
+			i < game.canvas.h_height +game.map.height -this.y -(this.size /2) +1; 
+			i += 20
+		) {
 			ctx.beginPath();
-			ctx.moveTo(gameEnv.canvas.h_height - this.x - (this.size /2), i);
-			ctx.lineTo(gameEnv.map.width + gameEnv.canvas.h_width - this.x - (this.size /2), i);
-			ctx.stroke();
+			ctx.moveTo(game.canvas.h_width -this.x - (this.size /2), i);
+			ctx.lineTo(game.map.width +game.canvas.h_width -this.x -(this.size /2), i);
+			ctx.stroke(); 
 		}
 
 		ctx.fillStyle = this.color;
-		// ctx.fillRect(gameEnv.canvas.h_width - (this.size / 2), gameEnv.canvas.h_height - (this.size / 2), this.size, this.size);
-		ctx.fillRect(gameEnv.canvas.h_width -(this.size /2), gameEnv.canvas.h_height -(this.size /2), this.size, this.size);
+		ctx.fillRect(
+			game.canvas.h_width -(this.size /2), 
+			game.canvas.h_height -(this.size /2), 
+			this.size, 
+			this.size
+		);
 	}
-}
-
-const gameEnv = {
-	// canvas: DOM.canvas, 
-	canvas: {
-		width: 500,
-		height: 500,
-		h_width: 250,
-		h_height: 250
-	},
-	map: {
-		width: 600,
-		height: 400
-	},
-	ctx: DOM.canvas.getContext('2d'),
-	// background_url: "https://wallpapertag.com/wallpaper/full/6/0/0/294499-large-pattern-background-2560x1600.jpg",
-	animate_interval: 1000 / 75,
-	bgImage: new Image(),
-	animate: function() {
-		const ctx = gameEnv.ctx;
-
-		ctx.clearRect(0, 0, gameEnv.canvas.width, gameEnv.canvas.height);
-
-		// console.log(players)
-		if (players.hasOwnProperty(socket.id)) {
-			players[socket.id].draw();
-
-			let x = players[socket.id].x;
-			let y = players[socket.id].y;
-			//const player_width = 30;
-			//const player_height = 30;
-	
-			for (let key in players) {
-				if (key !== socket.id) {
-					if (players.hasOwnProperty(key)) {
-						let player_x = players[key].x;
-						let player_y = players[key].y;
-		
-						// if ((player_x < x + canvas.h_width && player_x > x - canvas.h_width -player.size) && (player_y < y + canvas.h_height && player_y > y - canvas.h_height - player.size)) {
-							players[key].draw();
-						// }
-					}
-	
-				}
-			}
-		} else {
-			console.log('animate not ready')
-		}
-
-		getRate();
-
-	},
-	startGame: function() {
-		console.log('starting game');
-
-		this.bgImage.src = this.background_url;
-
-		console.log(this.animate_interval);
-		setInterval(this.animate, this.animate_interval);
-	}
-};
-
-gameEnv.startGame();
-
-function eat() {
-	socket.emit('player_eat');
-
 }
 
 const socket = io.connect('/');
 
+class Game {
+	constructor() {
+		this.canvas = {
+			width: 500,
+			height: 500,
+			h_width: 250,
+			h_height: 250,
+			window_resize: window.onresize = () => this.updateCanvasWidth()
+		}
+		this.map = {
+			width: 2000,
+			height: 1000
+		}
+		this.players = {};
+		this.user = {
+			username: 'Callum',
+			x_speed: 0,
+			y_speed: 0,
+			keyDown: document.onkeydown = e => {
+				// up:38 down:40 right:39 left:37
+				if (e.keyCode === 38) this.user.y_speed = -1;
+				else if (e.keyCode === 40) this.user.y_speed = 1;
+
+				if (e.keyCode === 37) this.user.x_speed = -1;
+				else if (e.keyCode === 39) this.user.x_speed = 1;
+
+				this.updatePlayerDirection(this.user.x_speed, this.user.y_speed);
+			},
+			keyUp: document.onkeyup = e => {
+				if (e.keyCode === 38 || e.keyCode === 40) this.user.y_speed = 0;
+				if (e.keyCode === 37 || e.keyCode === 39) this.user.x_speed = 0;
+
+				this.updatePlayerDirection(this.user.x_speed, this.user.y_speed);
+			}
+		}
+		this.canvasElement = document.querySelector('canvas#canvas');
+		this.ctx = this.canvasElement.getContext('2d'); 
+		this.animate_interval = 1000 / 60;
+		
+	}
+
+	start() {
+		console.log('starting game');
+
+		this.updateCanvasWidth();
+
+		setInterval(this.animate, this.animate_interval);
+	}
+	animate() {
+		const _this = game;
+		let x, y, player_x, player_y;
+
+		// console.log(_this.players)
+		
+		_this.ctx.clearRect(0, 0, _this.canvas.width, _this.canvas.height);
+
+		if (_this.players.hasOwnProperty(socket.id)) {
+			_this.players[socket.id].draw();
+
+			for (let key in _this.players) {
+				if (_this.players.hasOwnProperty(key) && key !== socket.id) {
+					// console.log(key)
+					_this.players[key].draw();					
+				}
+			}
+		} 
+	}
+	updateCanvasWidth() {
+		this.canvasElement.width = window.innerWidth -40;
+		this.canvas.width = window.innerWidth -40;
+		this.canvas.h_width = (window.innerWidth -40) /2;
+
+		this.canvasElement.height = window.innerHeight -60;
+		this.canvas.height = window.innerHeight -60;
+		this.canvas.h_height = (window.innerHeight -60) /2;
+
+	}
+	updatePlayerDirection(x_speed, y_speed) {
+		socket.emit('update_player_direction', {x_speed, y_speed});
+	}
+	eat() {
+		socket.emit('player_eat');
+	}
+}
+
+const game = new Game;
+game.start();
+
 socket.on('connect', () => {
 	socket.emit('new_client_connect', {
-		username: user.username
+		username: game.username
 	});
 });
 
@@ -161,47 +175,35 @@ function getRate() {
 	if (!lastCalledTime) {
 		lastCalledTime = performance.now();
 		fps = 0;
-		// return;
-	} else {
-		fps = (performance.now() - lastCalledTime) / 1000;
-		delta = (performance.now() - lastCalledTime) / 1000;
-		lastCalledTime = performance.now();
-		output = Math.floor(1 / delta);
-	}
-	// console.log(output + ' seconds')
+		return;
+	} 
+	fps = (performance.now() - lastCalledTime) / 1000;
+	delta = (performance.now() - lastCalledTime) / 1000;
+	lastCalledTime = performance.now();
+	output = Math.floor(1 / delta);
+	
 	DOM.fps_counter.innerHTML = output;
 }
 
 socket.on('send_coords_to_clients', data => {
-	// getRate();
-
+	// console.log(data)
 	for (let key in data) {
-		if (key in players === false) {
-			players[key] = data[key];
+		if (key in game.players === false) {
+			game.players[key] = data[key];
 			if (key === socket.id) {
-				players[key] = new User(data[key].size, data[key].color);
+				game.players[key] = new User(data[key].size, data[key].color);
 			} else {
-				players[key] = new Player(data[key].size, data[key].color);
+				game.players[key] = new Player(data[key].size, data[key].color);
 			}
 		} else {
-			players[key].x = data[key].x;
-			players[key].y = data[key].y;
-			players[key].size = data[key].size;
-			// players[key].height = data[key].size;
-			
+			game.players[key].x = data[key].x;
+			game.players[key].y = data[key].y;
+			game.players[key].size = data[key].size;
 		}
 	}
 
 });
 
 socket.on('client_disconnect', id => {
-	delete players[id];
+	delete game.players[id];
 });
-
-function updatePlayerDirection() {
-	// console.log('update player dir');
-	socket.emit('update_player_direction', {
-		x_speed: user.direction.x,
-		y_speed: user.direction.y
-	});
-}

@@ -17,14 +17,15 @@ app.get('/', function(req, res) {
 
 let clients = {};
 
-const canvas_width = 600;
-const canvas_height = 400;
-const user_width = 30;
-const user_height = 30;
+const canvas_width = 2000;
+const canvas_height = 1000;
+const client_start_size = 15;
+// const user_width = 30;
+// const user_height = 30;
 
 function generateNewCoords() {
-	let x = Math.floor(Math.random() * (600 - 30));
-	let y = Math.floor(Math.random() * (400 - 30));
+	let x = Math.floor(Math.random() * (canvas_width - client_start_size));
+	let y = Math.floor(Math.random() * (canvas_height - client_start_size));
 	return {x, y};
 }
 
@@ -67,7 +68,7 @@ function addClient(id, username) {
 		y: coords.y,
 		x_speed: 0,
 		y_speed: 0,
-		size: 15,
+		size: client_start_size,
 		color: 'red'
 	};
 }
@@ -79,6 +80,7 @@ io.on('connection', socket => {
 	});
 
 	socket.on('update_player_direction', data => {
+		// console.log(data)
 		clients[socket.id].x_speed = data.x_speed;
 		clients[socket.id].y_speed = data.y_speed;
 	});
@@ -113,8 +115,6 @@ function getRate() {
 	delta = (time - lastCalledTime) / 1000;
 	lastCalledTime = time;
 	output = Math.floor(1 / delta);
-	// console.log('i')
-
 	// console.log(output + ' seconds');
 }
 
@@ -155,9 +155,9 @@ function updateUserCoords() {
 			// 600 x 400 (add 1 for grid)
 			// change ammount must be +-1 or there will be calculation errors
 			if (!left_blocked && x_speed === -1 && x > 0) clients[key].x -= 1;
-			else if (!right_blocked && x_speed === 1 && x < canvas_width - size - 1) clients[key].x += 1;
+			else if (!right_blocked && x_speed === 1 && x < canvas_width - size -1) clients[key].x += 1;
 			if (!up_blocked && y_speed === -1 && y > 0) clients[key].y -= 1;
-			else if (!down_blocked && y_speed === 1 && y < canvas_height - size - 1) clients[key].y += 1;
+			else if (!down_blocked && y_speed === 1 && y < canvas_height - size -1) clients[key].y += 1;
 		}
 	}
 	getRate();
@@ -177,6 +177,7 @@ function sendCoordsToClients() {
 
 		}
 	}
+	// console.log(returnObj)
 	io.volatile.emit('send_coords_to_clients', returnObj);
 }
 

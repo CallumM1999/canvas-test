@@ -9,11 +9,17 @@
         border: 1px solid #000;
         background-color: #ddd;
         margin: 20px;
+        /* padding: 20px; */
+
+        /* position: absolute;
+        top: 20px; */
 
       }
       body {
+        overflow: hidden;
         margin: 0;
         box-sizing: border-box;
+        /* padding: 20px; */
       }
 
       #fps {
@@ -29,7 +35,7 @@
   </head>
   <body>
 
-    <div id="fps">fps: <span></span></div> <button id="eat" onclick="eat()">Click to increase size</button>
+    <div id="fps">fps: <span></span></div> <button id="eat" onclick="game.eat()">Click to increase size</button>
 
     <canvas id="canvas" width=500 height=500></canvas>
 
