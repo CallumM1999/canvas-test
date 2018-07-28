@@ -51,6 +51,13 @@ function tryNewCoords(coords) {
 function addClient(id, username) {
 	let coords = {};
 	let blocked;
+	const colors = [
+		'EE4266',
+		'2A1E5C',
+		'0A0F0D',
+		'C2F8CB',
+		'3CBBB1'
+	];
 
 	console.log('adding client');
 
@@ -69,7 +76,7 @@ function addClient(id, username) {
 		x_speed: 0,
 		y_speed: 0,
 		size: client_start_size,
-		color: 'red'
+		color: '#' + colors[Math.floor(Math.random() * colors.length)]
 	};
 }
 
@@ -119,12 +126,11 @@ function getRate() {
 }
 
 function updateUserCoords() {
-	let x, y, x_speed, y_speed, left_blocked, right_blocked, up_blocked, down_blocked, player_x, player_y;
+	let x, y, x_speed, y_speed, size, left_blocked, right_blocked, up_blocked, down_blocked, player_x, player_y;
 
 	for (let key in clients) {
 		if (clients.hasOwnProperty(key)) {
-
-			
+	
 			({x,y} = clients[key]);
 			({x_speed,y_speed} = clients[key]);
 			size = clients[key].size;
@@ -174,19 +180,14 @@ function sendCoordsToClients() {
 				color: clients[key].color,
 				size: clients[key].size
 			};
-
 		}
 	}
-	// console.log(returnObj)
 	io.volatile.emit('send_coords_to_clients', returnObj);
 }
 
-setInterval(function() {
-	updateUserCoords();
-	// sendCoordsToClients();
-}, 1000 / 120);
+setInterval(function() {updateUserCoords();}, 1000 / 120);
+setInterval(function() {sendCoordsToClients();}, 1000 / 60);
 
-setInterval(function() {
-	// updateUserCoords();
-	sendCoordsToClients();
-}, 1000 / 60);
+for (let i=0; i<200; i++) {
+	addClient(i + Math.random(), 'user'+i);
+}

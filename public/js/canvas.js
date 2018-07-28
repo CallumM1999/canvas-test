@@ -1,9 +1,3 @@
-const DOM = {
-	canvas: document.querySelector('#canvas'),
-	fps_counter: document.querySelector('#fps span'),
-	eat_btn: document.querySelector('#eat')
-};
-
 class Player {
 	constructor(size, color) {
 		this.size = size;
@@ -28,6 +22,7 @@ class User extends Player {
 	}
 	draw() {
 		const ctx = game.ctx;
+		let start, finish;
 
 		// console.log(this)
 
@@ -40,22 +35,19 @@ class User extends Player {
 		);
 
 		ctx.strokeStyle = 'black';
-		for (
-			let i = game.canvas.h_width -this.x -(this.size /2); 
-			i < game.canvas.h_width +game.map.width -this.x -(this.size /2) +1; 
-			i += 20
-		) {
+
+		start = game.canvas.h_width -this.x -(this.size /2);
+		finish = game.canvas.h_width +game.map.width -this.x -(this.size /2) +1;
+		for (let i = start; i < finish; i += 20) {
 			ctx.beginPath();
 			ctx.moveTo(i, game.canvas.h_height -this.y -(this.size /2));
 			ctx.lineTo(i, game.map.height +game.canvas.h_height -this.y -(this.size /2));
 			ctx.stroke();
 		}
-
-		for (
-			let i = game.canvas.h_height -this.y -(this.size /2); 
-			i < game.canvas.h_height +game.map.height -this.y -(this.size /2) +1; 
-			i += 20
-		) {
+		
+		start = game.canvas.h_height -this.y -(this.size /2);
+		finish = game.canvas.h_height +game.map.height -this.y -(this.size /2) +1;
+		for (let i = start; i < finish; i += 20) {
 			ctx.beginPath();
 			ctx.moveTo(game.canvas.h_width -this.x - (this.size /2), i);
 			ctx.lineTo(game.map.width +game.canvas.h_width -this.x -(this.size /2), i);
@@ -82,11 +74,11 @@ class Game {
 			h_width: 250,
 			h_height: 250,
 			window_resize: window.onresize = () => this.updateCanvasWidth()
-		}
+		};
 		this.map = {
 			width: 2000,
 			height: 1000
-		}
+		};
 		this.players = {};
 		this.user = {
 			username: 'Callum',
@@ -108,7 +100,7 @@ class Game {
 
 				this.updatePlayerDirection(this.user.x_speed, this.user.y_speed);
 			}
-		}
+		};
 		this.canvasElement = document.querySelector('canvas#canvas');
 		this.ctx = this.canvasElement.getContext('2d'); 
 		this.animate_interval = 1000 / 60;
@@ -124,9 +116,6 @@ class Game {
 	}
 	animate() {
 		const _this = game;
-		let x, y, player_x, player_y;
-
-		// console.log(_this.players)
 		
 		_this.ctx.clearRect(0, 0, _this.canvas.width, _this.canvas.height);
 
@@ -140,6 +129,7 @@ class Game {
 				}
 			}
 		} 
+		getRate();
 	}
 	updateCanvasWidth() {
 		this.canvasElement.width = window.innerWidth -40;
@@ -159,7 +149,7 @@ class Game {
 	}
 }
 
-const game = new Game;
+const game = new Game();
 game.start();
 
 socket.on('connect', () => {
@@ -170,6 +160,7 @@ socket.on('connect', () => {
 
 let fps;
 let lastCalledTime;
+const fps_counter = document.querySelector('#fps span');  
 function getRate() {
 	let output, delta;
 	if (!lastCalledTime) {
@@ -182,7 +173,7 @@ function getRate() {
 	lastCalledTime = performance.now();
 	output = Math.floor(1 / delta);
 	
-	DOM.fps_counter.innerHTML = output;
+	fps_counter.innerHTML = output;
 }
 
 socket.on('send_coords_to_clients', data => {
