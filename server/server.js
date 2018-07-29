@@ -17,9 +17,9 @@ app.get('/', function(req, res) {
 
 let clients = {};
 
-const canvas_width = 2000;
-const canvas_height = 1000;
-const client_start_size = 15;
+const canvas_width = 8000;
+const canvas_height = 6000;
+const client_start_size = 20;
 // const user_width = 30;
 // const user_height = 30;
 
@@ -144,26 +144,27 @@ function updateUserCoords() {
 					player_y = clients[player_key].y;
 					let player_size = clients[player_key].size;
 
-					if ((player_x > x -player_size && player_x < x +size) && (player_y > y -player_size && player_y < y +size)) {
+					if ((player_x +player_size > x -size && player_x -player_size< x +size) && (player_y +player_size> y -size && player_y -player_size < y +size)) {
 
-						if (x < player_x && (y > player_y -size +1 && y < player_y +player_size -1))       right_blocked = true;
-						if (x > player_x && (y > player_y -size +1 && y < player_y +player_size -1)) left_blocked = true;
-						if (y < player_y && (x > player_x -size +1 && x < player_x +player_size -1))        down_blocked = true;
-						if (y > player_y && (x > player_x -size +1 && x < player_x +player_size -1))   up_blocked = true;
+						if (x < player_x && (y > player_y -size +1 && y < player_y +player_size -1))	right_blocked = true;
+						if (x > player_x && (y > player_y -size +1 && y < player_y +player_size -1))	left_blocked = true;
+						if (y < player_y && (x > player_x -size +1 && x < player_x +player_size -1))      			down_blocked = true;
+						if (y > player_y && (x > player_x -size +1 && x < player_x +player_size -1))				up_blocked = true;
 						
 
 						// console.log(`left:${left_blocked} right:${right_blocked} up:${up_blocked} down:${down_blocked}`);
 					} 
+
 				}
 			}
 
 			// width/height - 30px
 			// 600 x 400 (add 1 for grid)
 			// change ammount must be +-1 or there will be calculation errors
-			if (!left_blocked && x_speed === -1 && x > 0) clients[key].x -= 1;
-			else if (!right_blocked && x_speed === 1 && x < canvas_width - size -1) clients[key].x += 1;
-			if (!up_blocked && y_speed === -1 && y > 0) clients[key].y -= 1;
-			else if (!down_blocked && y_speed === 1 && y < canvas_height - size -1) clients[key].y += 1;
+			if (!left_blocked && x_speed === -1 && x > 0 +size) clients[key].x -= 1;
+			else if (!right_blocked && x_speed === 1 && x < canvas_width -size -1) clients[key].x += 1;
+			if (!up_blocked && y_speed === -1 && y > 0 +size) clients[key].y -= 1;
+			else if (!down_blocked && y_speed === 1 && y < canvas_height -size -1) clients[key].y += 1;
 		}
 	}
 	getRate();
@@ -188,6 +189,6 @@ function sendCoordsToClients() {
 setInterval(function() {updateUserCoords();}, 1000 / 120);
 setInterval(function() {sendCoordsToClients();}, 1000 / 60);
 
-for (let i=0; i<200; i++) {
-	addClient(i + Math.random(), 'user'+i);
+for (let i=0; i<100; i++) {
+	addClient(i, 'user'+i);
 }

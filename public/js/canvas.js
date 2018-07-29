@@ -7,12 +7,25 @@ class Player {
 		const ctx = game.ctx;
 
 		ctx.fillStyle = this.color;
-		ctx.fillRect(
-			this.x -game.players[socket.id].x +game.canvas.h_width -(game.players[socket.id].size /2),
+		// ctx.fillRect(
+		// 	this.x -game.players[socket.id].x +game.canvas.h_width -(game.players[socket.id].size /2),
+		// 	this.y -game.players[socket.id].y +game.canvas.h_height -(game.players[socket.id].size /2),
+		// 	this.size,
+		// 	this.size
+		// );
+
+		ctx.beginPath();
+		ctx.arc(
+			this.x -game.players[socket.id].x +game.canvas.h_width -(game.players[socket.id].size /2), 
 			this.y -game.players[socket.id].y +game.canvas.h_height -(game.players[socket.id].size /2),
-			this.size,
-			this.size
+			this.size, 
+			0, 
+			2*Math.PI
 		);
+		ctx.fill();
+		ctx.strokeStyle = '#555';
+		// ctx.lineWidth = 2;
+		ctx.stroke();
 	}
 }
 
@@ -34,11 +47,11 @@ class User extends Player {
 			game.map.height
 		);
 
-		ctx.strokeStyle = 'black';
+		ctx.strokeStyle = '#ccc';
 
 		start = game.canvas.h_width -this.x -(this.size /2);
 		finish = game.canvas.h_width +game.map.width -this.x -(this.size /2) +1;
-		for (let i = start; i < finish; i += 20) {
+		for (let i = start; i < finish; i += 100) {
 			ctx.beginPath();
 			ctx.moveTo(i, game.canvas.h_height -this.y -(this.size /2));
 			ctx.lineTo(i, game.map.height +game.canvas.h_height -this.y -(this.size /2));
@@ -47,20 +60,33 @@ class User extends Player {
 		
 		start = game.canvas.h_height -this.y -(this.size /2);
 		finish = game.canvas.h_height +game.map.height -this.y -(this.size /2) +1;
-		for (let i = start; i < finish; i += 20) {
+		for (let i = start; i < finish; i += 100) {
 			ctx.beginPath();
 			ctx.moveTo(game.canvas.h_width -this.x - (this.size /2), i);
 			ctx.lineTo(game.map.width +game.canvas.h_width -this.x -(this.size /2), i);
 			ctx.stroke(); 
 		}
 
-		ctx.fillStyle = this.color;
-		ctx.fillRect(
+		ctx.fillStyle = 'red';
+		ctx.beginPath();
+		ctx.arc(
 			game.canvas.h_width -(this.size /2), 
 			game.canvas.h_height -(this.size /2), 
 			this.size, 
-			this.size
+			0, 
+			2*Math.PI
 		);
+		ctx.fill();
+		ctx.strokeStyle = '#555';
+		// ctx.lineWidth = 2;
+		ctx.stroke();
+
+		// ctx.fillRect(
+		// 	game.canvas.h_width -(this.size /2), 
+		// 	game.canvas.h_height -(this.size /2), 
+		// 	this.size, 
+		// 	this.size
+		// );
 	}
 }
 
@@ -76,9 +102,10 @@ class Game {
 			window_resize: window.onresize = () => this.updateCanvasWidth()
 		};
 		this.map = {
-			width: 2000,
-			height: 1000
+			width: 8000,
+			height: 6000
 		};
+		this.scale = 1;
 		this.players = {};
 		this.user = {
 			username: 'Callum',
