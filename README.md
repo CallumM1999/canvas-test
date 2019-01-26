@@ -6,7 +6,7 @@ This was my first one of my first nodeJs projects. I wanted to create a multipla
 
 I used socket-io to handle send data between the server and clients.
 
-![gif of gameplay](https://raw.githubusercontent.com/CallumM1999/canvas_test/master/readme_assets/canvas.gif)
+![gif of gameplay](https://raw.githubusercontent.com/CallumM1999/canvas-test/master/readme_assets/canvas.gif)
 
 ## Installation
 
