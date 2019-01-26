@@ -5,8 +5,7 @@ My first multiplayer canvas game using Socket-io.
 This was my first one of my first nodeJs projects. I wanted to create a multiplayer environment where a user could see other users moving on the screen.
 
 I used socket-io to handle send data between the server and clients.
-
-<img src='https://raw.githubusercontent.com/CallumM1999/canvas_test/master/readme_assets/canvas.gif'>
+<img src='https://raw.githubusercontent.com/CallumM1999/canvas_test/master/readme_assets/canvas.gif' />
 
 ## Installation
 
